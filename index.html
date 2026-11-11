@@ -4271,7 +4271,11 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
             messagingSenderId: "769730725408",
             appId: "1:769730725408:web:5d54f8d3ad41a7d3191e45"
         };
-        const ADMIN_UID = "ByU1Ueu9pfPvvCBOJxzrJdWCRax1";
+        const ADMIN_UIDS = [
+            "zrFh4dVmycMFQ492aUkw8Z84v0D3", // Administrador 2
+            "YT2iI4ztQgYKtFrnCoXUty8JE3C3"  // Administrador 1
+        ];
+        const isAuthorizedAdminUid = (uid) => !!uid && ADMIN_UIDS.includes(uid);
 
         // La clave legacy se conserva SOLO para recuperación; la app en nube no la sobrescribe.
         const STORAGE_KEY = 'ligaData9';
@@ -6447,7 +6451,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         function scheduleSeasonSwitchSave() {
             // Los espectadores solo están navegando; no deben intentar cambiar
             // activeLeagueId global en Firebase.
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
 
             if (seasonSwitchSaveTimer) {
                 clearTimeout(seasonSwitchSaveTimer);
@@ -6594,7 +6598,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         let eliminationSwitchSaveTimer = null;
 
         function scheduleEliminationSwitchSave() {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
 
             if (eliminationSwitchSaveTimer) {
                 clearTimeout(eliminationSwitchSaveTimer);
@@ -6626,7 +6630,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
 
             // ESPECTADOR: cambiar de eliminatoria es navegación local.
             // No toca Firebase, no sincroniza el cuadro anterior y no sigue al admin.
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) {
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 appState.activeBracketId = edition.id;
                 appState.bracket = normalizeBracketData(edition.data || initDefaultBracket(savedFormat));
                 appState.bracket.format = savedFormat;
@@ -7620,7 +7624,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         }
 
         function scheduleTeamTrophyAwardRepairSave() {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
             if (teamTrophyAwardRepairSaveTimer) return;
 
             teamTrophyAwardRepairSaveTimer = setTimeout(async () => {
@@ -9868,7 +9872,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         let bracketSaveTimer = null;
 
         function scheduleBracketSave() {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
 
             // SIN AUTOGUARDADO:
             // los inputs ya actualizan appState.bracket en memoria para que global,
@@ -9981,7 +9985,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         }
 
         window.onBracketScoreInput = function(input) {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) {
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 // Seguridad UI adicional: un espectador nunca modifica el estado local.
                 renderBracket();
                 applyAdminUiRestrictions();
@@ -10026,7 +10030,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         };
 
         window.onBracketFieldChange = function(input) {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) {
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 renderBracket();
                 applyAdminUiRestrictions();
                 return;
@@ -10150,7 +10154,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
             appState.bracket.format = savedFormat;
             appState.bracket.initialTies = savedInitialTies;
 
-            if (activeEdition && isAdmin && auth?.currentUser?.uid === ADMIN_UID) {
+            if (activeEdition && isAdmin && isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 activeEdition.format = savedFormat;
                 activeEdition.initialTies = savedInitialTies;
                 activeEdition.data = appState.bracket;
@@ -10160,7 +10164,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
             const initialTies = savedInitialTies;
 
             // La propagación automática modifica el cuadro y por eso es solo admin.
-            if (isAdmin && auth?.currentUser?.uid === ADMIN_UID) {
+            if (isAdmin && isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 syncPreliminaryWinnerSlots(b);
             }
             resetBracketOptionCaches();
@@ -13244,7 +13248,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         }
 
         async function saveToFirestore() {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) {
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) {
                 showToast("Modo espectador: solo el administrador puede guardar cambios.");
                 return false;
             }
@@ -14692,7 +14696,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         };
 
         window.savePendingData = function() {
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
             let needsSave = false;
             const teamInputs = document.querySelectorAll('input[id^="name-"]');
             if (teamInputs.length > 0) {
@@ -15605,7 +15609,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
         ];
 
         function adminActionAllowed() {
-            return isAdmin && auth?.currentUser?.uid === ADMIN_UID;
+            return isAdmin && isAuthorizedAdminUid(auth?.currentUser?.uid);
         }
 
         function applyAdminMode() {
@@ -15765,7 +15769,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
             try {
                 if (errorBox) errorBox.classList.add('hidden');
                 const credential = await signInWithEmailAndPassword(auth, email, password);
-                if (credential.user.uid !== ADMIN_UID) {
+                if (!isAuthorizedAdminUid(credential.user.uid)) {
                     await signOut(auth);
                     throw new Error('Esta cuenta no está autorizada como administrador.');
                 }
@@ -15852,7 +15856,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
                 installAdminGuards();
 
                 onAuthStateChanged(auth, async (user) => {
-                    isAdmin = !!user && user.uid === ADMIN_UID;
+                    isAdmin = !!user && isAuthorizedAdminUid(user.uid);
 
                     if (!isAdmin && appState) {
                         applyViewerEliminationSelection(appState);
@@ -15891,7 +15895,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
 
         async function persistPendingPlayerMergeMigration() {
             if (!pendingPlayerMergePersistence) return;
-            if (!isAdmin || auth?.currentUser?.uid !== ADMIN_UID) return;
+            if (!isAdmin || !isAuthorizedAdminUid(auth?.currentUser?.uid)) return;
             if (!lastCloudSnapshotSignature || !rootState || !cloudDocRef) return;
 
             pendingPlayerMergePersistence = false;
