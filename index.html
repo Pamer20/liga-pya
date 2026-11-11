@@ -4271,11 +4271,15 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
             messagingSenderId: "769730725408",
             appId: "1:769730725408:web:5d54f8d3ad41a7d3191e45"
         };
-        const ADMIN_UIDS = [
-            "zrFh4dVmycMFQ492aUkw8Z84v0D3", // Administrador 2
-            "YT2iI4ztQgYKtFrnCoXUty8JE3C3"  // Administrador 1
-        ];
-        const isAuthorizedAdminUid = (uid) => !!uid && ADMIN_UIDS.includes(uid);
+        const ADMIN_UIDS = Object.freeze([
+            "YT2iI4ztQgYKtFrnCoXUty8JE3C3",
+            "zrFh4dVmycMFQ492aUkw8Z84v0D3"
+        ]);
+
+        // Comprueba si la cuenta autenticada pertenece a la lista de administradores.
+        function isAuthorizedAdminUid(uid) {
+            return !!uid && ADMIN_UIDS.includes(uid);
+        }
 
         // La clave legacy se conserva SOLO para recuperación; la app en nube no la sobrescribe.
         const STORAGE_KEY = 'ligaData9';
@@ -15856,7 +15860,7 @@ html.dark .tab-content .shadow-sm.bg-white { border-color: #365350 !important; }
                 installAdminGuards();
 
                 onAuthStateChanged(auth, async (user) => {
-                    isAdmin = !!user && isAuthorizedAdminUid(user.uid);
+                    isAdmin = !!user && isAuthorizedAdminUid(user?.uid);
 
                     if (!isAdmin && appState) {
                         applyViewerEliminationSelection(appState);
